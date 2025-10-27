@@ -4,18 +4,18 @@ Milestone 1 established the foundation for ClassPass by loading the UCI dataset,
 
 ## Task Dependency Matrix
 
-| Task ID | Title                                                     | Depends On | Difficulty (ML Newcomer) | Status   | Test Coverage          | Notes / Prerequisites                                                                 |
-| ------- | --------------------------------------------------------- | ---------- | ------------------------ | -------- | ---------------------- | ------------------------------------------------------------------------------------- |
-| T1      | Repository & Environment Scaffold                         | _None_     | Easy                     | Complete | N/A (infrastructure)   | Initialize git repo, add `.gitignore`, `requirements.txt`, `pyproject.toml`, CI stub. |
-| T2      | Acquire & Inspect Dataset                                 | T1         | Medium                   | In Progress | Manual checks only     | Download UCI CSV, confirm `Target` values, review basic stats for missingness.        |
-| T3      | Preprocessing Pipeline (encoding + scaling + splits)      | T2         | Hard                     | Complete | Unit tests needed      | Implement loaders, stratified train/val/test split, scaling toggles.                  |
-| T4      | Custom kNN Implementation                                 | T3         | Hard                     | Complete | `tests/test_knn.py`    | Build kNN with Euclidean/Manhattan support, tie-breaking, neighbor explanations.      |
-| T5      | Baseline Training Script (`scripts/train_baseline.py`)    | T4         | Medium                   | Complete | Covered via script run | Wire preprocessing + kNN, produce metrics, save artifacts/figures.                    |
-| T6      | Evaluation Plots & Metrics (F1, PR, Brier, Reliability)   | T5         | Medium                   | Complete | Manual verification    | Implement confusion matrix, PR curves, reliability plots, Brier calculation.          |
-| T7      | Documentation & Reporting (README, CHANGELOG entries)     | T1         | Easy                     | Complete | N/A (docs)             | Capture setup steps, milestone narrative, GitHub About section alignment.             |
-| T8      | CI Setup (ruff, black, pytest workflow)                   | T1         | Medium                   | Complete | GitHub Actions logs    | Ensure lint/test jobs run on push/PR, acts as regression safety net.                  |
-| T9      | Dataset Placement Policy (no raw data in repo history)    | T2         | Easy                     | Complete | N/A (process)          | Document data handling conventions in README and `.gitignore`.                        |
-| T10     | Milestone Review & Next-Step Planning                     | T6, T7     | Easy                     | Pending  | N/A (meeting)          | Summarize learnings, outline Decision Tree and k-d tree plan for Milestone 2.         |
+| Task ID | Title                                                     | Depends On | Difficulty (ML Newcomer) | Status           | Test Coverage                | Notes / Prerequisites                                                                 |
+| ------- | --------------------------------------------------------- | ---------- | ------------------------ | ---------------- | ---------------------------- | ------------------------------------------------------------------------------------- |
+| T1      | Repository & Environment Scaffold                         | _None_     | Easy                     | ✅ Complete      | N/A (infrastructure)         | Initialize git repo, add `.gitignore`, `requirements.txt`, `pyproject.toml`, CI stub. |
+| T2      | Acquire & Inspect Dataset                                 | T1         | Medium                   | 🟡 In Progress   | 0% (manual spot-checks)      | Download UCI CSV, confirm `Target` values, review basic stats for missingness.        |
+| T3      | Preprocessing Pipeline (encoding + scaling + splits)      | T2         | Hard                     | ✅ Complete      | 0% (automated coverage TBD)  | Implement loaders, stratified train/val/test split, scaling toggles.                  |
+| T4      | Custom kNN Implementation                                 | T3         | Hard                     | ✅ Complete      | ~40% (`tests/test_knn.py`)   | Build kNN with Euclidean/Manhattan support, tie-breaking, neighbor explanations.      |
+| T5      | Baseline Training Script (`scripts/train_baseline.py`)    | T4         | Medium                   | ✅ Complete      | 0% (smoke via manual run)    | Wire preprocessing + kNN, produce metrics, save artifacts/figures.                    |
+| T6      | Evaluation Plots & Metrics (F1, PR, Brier, Reliability)   | T5         | Medium                   | ✅ Complete      | 0% (visual/manual checks)    | Implement confusion matrix, PR curves, reliability plots, Brier calculation.          |
+| T7      | Documentation & Reporting (README, CHANGELOG entries)     | T1         | Easy                     | ✅ Complete      | N/A (docs)                   | Capture setup steps, milestone narrative, GitHub About section alignment.             |
+| T8      | CI Setup (ruff, black, pytest workflow)                   | T1         | Medium                   | ✅ Complete      | 100% (CI workflow passing)   | Ensure lint/test jobs run on push/PR, acts as regression safety net.                  |
+| T9      | Dataset Placement Policy (no raw data in repo history)    | T2         | Easy                     | ✅ Complete      | N/A (process)                | Document data handling conventions in README and `.gitignore`.                        |
+| T10     | Milestone Review & Next-Step Planning                     | T6, T7     | Easy                     | ⬜ Pending       | N/A (meeting)                | Summarize learnings, outline Decision Tree and k-d tree plan for Milestone 2.         |
 
 ---
 
@@ -35,4 +35,3 @@ Milestone 1 established the foundation for ClassPass by loading the UCI dataset,
 
 5. **Process & Documentation (T7–T10)**  
    Keep README and changelog updated as work completes. CI ensures repeatability, and the closing review meeting should translate directly into Milestone 2 issues (Decision Tree, k-d tree acceleration, nested CV).
-
