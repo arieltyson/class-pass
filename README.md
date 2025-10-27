@@ -1,6 +1,6 @@
 # ClassPass Predictor 🎓📊
 
-# A three-class student success analytics pipeline built with modern Python 3.11
+# A three-class student success analytics pipeline built with modern Python & ML Libraries
 
 📡 Designed to flag Dropout, Enrolled, and Graduate outcomes early using custom ML models and
 transparent explainability workflows.
@@ -94,8 +94,7 @@ metric tables when altering modeling behavior so the team can validate performan
 
 ## License 🪪
 
-This project will be released under the MIT License. Until the `LICENSE` file lands, treat all code
-and documentation as © 2025 ClassPass team (Ariel Tyson & Phil Akagu-Jones) and obtain permission
-before redistribution.
+This project is distributed under the [MIT License](LICENSE) © 2025 ClassPass team (Ariel Tyson &
+Phil Akagu-Jones). Feel free to use, modify, and share the code with attribution.
 
 ---
