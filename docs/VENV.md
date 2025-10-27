@@ -54,7 +54,16 @@ python -m scripts.train_baseline --help
 
 If each command succeeds, your environment is ready for development and testing.
 
-## 6. Deactivate When Finished
+## 6. Install Pre-commit Hooks (recommended)
+
+```bash
+pre-commit install
+pre-commit run --all-files  # optional initial sweep
+```
+
+Hooks now format/lint staged changes automatically before every commit.
+
+## 7. Deactivate When Finished
 
 ```bash
 deactivate
@@ -62,7 +71,7 @@ deactivate
 
 Deactivation returns your shell to the global Python context without removing the `.venv` directory.
 
-## 7. Common Tips
+## 8. Common Tips
 
 - Re-run `pip install -r requirements.txt` after pulling updates that modify dependencies.
 - To reset the environment completely, remove the `.venv/` directory and repeat steps 2–4.

@@ -69,7 +69,33 @@ Combining linting and formatting in one command:
 ruff check . && black --check .
 ```
 
-## 5. Editor Integration
+### One-off Formatting
+
+Need to reformat everything manually? Ensure your virtual environment is active and run:
+
+```bash
+ruff format .
+```
+
+This applies Ruff’s formatter across the repo in place. Follow up with `git add` to stage the changes.
+
+## 5. Pre-commit Automation
+
+Install the Git hook once you have the virtual environment ready:
+
+```bash
+pre-commit install
+```
+
+Run the hooks across the entire repository the first time (or after large refactors):
+
+```bash
+pre-commit run --all-files
+```
+
+With hooks installed, `ruff --fix` and `ruff format` execute automatically before each commit. If files are reformatted, the commit is halted—stage the updates (`git add ...`) and commit again.
+
+## 6. Editor Integration
 
 Configure your IDE/Editor to run Ruff and Black on save:
 
