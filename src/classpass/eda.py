@@ -51,7 +51,9 @@ def numerical_summary(df: pd.DataFrame) -> pd.DataFrame:
     """Return descriptive statistics for numeric columns."""
     num_cols = df.select_dtypes(include=["number"]).columns.tolist()
     if not num_cols:
-        return pd.DataFrame(columns=["feature", "count", "mean", "std", "min", "25%", "50%", "75%", "max"])
+        return pd.DataFrame(
+            columns=["feature", "count", "mean", "std", "min", "25%", "50%", "75%", "max"]
+        )
     desc = df[num_cols].describe().transpose().reset_index().rename(columns={"index": "feature"})
     return desc
 

@@ -116,9 +116,7 @@ def apply_transformers(
         X_num = (X_num - a) / (b - a).replace(0, 1.0)
 
     X_cat = (
-        pd.get_dummies(X[cat_cols], drop_first=False)
-        if cat_cols
-        else pd.DataFrame(index=X.index)
+        pd.get_dummies(X[cat_cols], drop_first=False) if cat_cols else pd.DataFrame(index=X.index)
     )
     for col in ohe_cols:
         if col not in X_cat.columns:
