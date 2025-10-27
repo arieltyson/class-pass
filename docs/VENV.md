@@ -49,7 +49,7 @@ Run smoke checks to confirm tooling works:
 ruff --version
 black --version
 pytest -q
-python scripts/train_baseline.py --help
+python -m scripts.train_baseline --help
 ```
 
 If each command succeeds, your environment is ready for development and testing.

@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
+_NUM_SPLIT_SEGMENTS = 3
+
 
 def load_dataset(path: str) -> pd.DataFrame:
     """Load the CSV dataset and validate the target column."""
@@ -24,7 +26,7 @@ def train_val_test_split(
     seed: int = 42,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Create stratified train/validation/test splits."""
-    if len(splits) != 3:
+    if len(splits) != _NUM_SPLIT_SEGMENTS:
         msg = "splits must contain exactly three proportions (train, val, test)."
         raise ValueError(msg)
     if not np.isclose(sum(splits), 1.0):

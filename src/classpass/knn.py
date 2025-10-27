@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
+# 1. Standard Library Imports
+# (Sorted alphabetically: collections, typing)
 from collections import Counter
 from typing import Literal
 
+# 2. Third-Party Imports
 import numpy as np
+
+# 3. Local Application Imports (none in this snippet)
 
 
 DistanceMetric = Literal["euclidean", "manhattan"]

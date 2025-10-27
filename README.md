@@ -28,13 +28,27 @@ Spin up the baseline experiment from the repository root.
 python -m venv .venv                             # Create isolated environment
 source .venv/bin/activate                        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt                  # Install project dependencies
-python scripts/train_baseline.py \
+python -m scripts.train_baseline \
   --data data/raw/students.csv \
   --target Target \
   --k 7 \
   --scaler standard \
   --distance euclidean                           # Train baseline + write figures/artifacts
 ```
+
+### Data Audit & Preprocessing Check
+
+Generate EDA summaries and sanity-check the preprocessing pipeline before training:
+
+```bash
+python -m scripts.run_eda \
+  --data data/raw/students.csv \
+  --target Target \
+  --outdir reports/eda
+```
+
+- Outputs JSON/CSV artifacts describing class balance, missingness, numeric stats, and categorical top values.
+- Verifies that the preprocessing stack (encoding, scaling, stratified splits) runs without errors.
 
 ### Expected Output
 

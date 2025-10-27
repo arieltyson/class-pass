@@ -14,6 +14,7 @@
 
 ## 2025-11-02 — Milestone 1 Progress Snapshot
 - **Data Pipeline**: UCI dataset ingested; categorical encoding and numeric scaling verified; stratified train/val/test split in place.
+- **EDA Automation**: Added `scripts/run_eda.py` to produce missingness, class-balance, and preprocessing sanity reports (saved under `reports/eda/`).
 - **Baseline Model**: Custom kNN (Euclidean/Manhattan) operational with deterministic tie-breaking and neighbor_explanations for local interpretability.
 - **Evaluation Assets**: Macro-F1, confusion matrix, per-class precision–recall curves, Brier score, and reliability plots generated via `scripts/train_baseline.py`.
 - **Repo Engineering**: README, requirements, CI workflow (ruff, black, pytest), and unit test coverage for kNN established; reports/figures artifacts captured.

@@ -5,19 +5,37 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from sklearn.preprocessing import LabelEncoder
 
-from src.classpass.knn import KNNClassifier
-from src.classpass.metrics import brier, confusion, macro_f1, pr_curves
-from src.classpass.plotting import plot_confusion_matrix, plot_pr_curves, plot_reliability
-from src.classpass.preprocess import (
-    apply_transformers,
-    fit_transformers,
-    load_dataset,
-    train_val_test_split,
-)
+try:
+    from classpass.knn import KNNClassifier
+    from classpass.metrics import brier, confusion, macro_f1, pr_curves
+    from classpass.plotting import plot_confusion_matrix, plot_pr_curves, plot_reliability
+    from classpass.preprocess import (
+        apply_transformers,
+        fit_transformers,
+        load_dataset,
+        train_val_test_split,
+    )
+except ModuleNotFoundError:
+    if TYPE_CHECKING:
+        raise
+    SRC_ROOT = Path(__file__).resolve().parents[1] / "src"
+    if str(SRC_ROOT) not in sys.path:
+        sys.path.insert(0, str(SRC_ROOT))
+    from classpass.knn import KNNClassifier
+    from classpass.metrics import brier, confusion, macro_f1, pr_curves
+    from classpass.plotting import plot_confusion_matrix, plot_pr_curves, plot_reliability
+    from classpass.preprocess import (
+        apply_transformers,
+        fit_transformers,
+        load_dataset,
+        train_val_test_split,
+    )
 
 
 def build_arg_parser() -> argparse.ArgumentParser:

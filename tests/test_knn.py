@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.classpass.knn import KNNClassifier
+from classpass.knn import KNNClassifier
 
 
 def test_knn_simple():

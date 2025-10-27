@@ -35,6 +35,27 @@ black .
 - To dry-run without modifying files: `black --check .`.
 - Format a single file: `black src/classpass/knn.py`.
 
+### Import Ordering Conventions
+
+Follow PEP 8 and Ruff/isort grouping rules when arranging imports:
+
+```python
+from __future__ import annotations
+
+# Standard library (alphabetical)
+from collections import Counter
+from typing import Literal
+
+# Third-party packages
+import numpy as np
+
+# Local application imports go here (blank line separating groups)
+```
+
+- `from __future__ import ...` always appears immediately after the module docstring and before all other imports.
+- Separate standard library, third-party, and local imports with a blank line.
+- Within each group, keep imports sorted alphabetically. Ruff will flag deviations (e.g., rule `I001`).
+
 ## 4. Suggested Workflow
 
 1. Make changes.
