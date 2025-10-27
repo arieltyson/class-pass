@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def plot_confusion_matrix(cm, classes, out_path):
@@ -48,7 +48,7 @@ def plot_reliability(y_true, y_proba, classes, bins, out_path):
         edges = np.linspace(0, 1, bins + 1)
         mids = 0.5 * (edges[:-1] + edges[1:])
         acc, conf_bin = [], []
-        for lo, hi, mid in zip(edges[:-1], edges[1:], mids):
+        for lo, hi, mid in zip(edges[:-1], edges[1:], mids, strict=False):
             mask = (conf >= lo) & (conf < hi)
             if mask.sum() == 0:
                 continue
@@ -64,4 +64,3 @@ def plot_reliability(y_true, y_proba, classes, bins, out_path):
     fig.tight_layout()
     fig.savefig(out_path)
     plt.close(fig)
-

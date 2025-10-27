@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from typing import Literal, Tuple
+from typing import Literal
 
 import numpy as np
 
@@ -37,7 +37,7 @@ class KNNClassifier:
         self.classes_: np.ndarray | None = None
 
     # --------------------------------------------------------------------- #
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "KNNClassifier":
+    def fit(self, X: np.ndarray, y: np.ndarray) -> KNNClassifier:
         """Memorize the training data."""
         self._X = np.asarray(X, dtype=float)
         self._y = np.asarray(y, dtype=str)
@@ -52,7 +52,7 @@ class KNNClassifier:
         return np.abs(A[:, None, :] - B[None, :, :]).sum(axis=2)
 
     # --------------------------------------------------------------------- #
-    def kneighbors(self, X: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def kneighbors(self, X: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """Return distances and indices for k nearest neighbors."""
         if self._X is None:
             msg = "Model must be fit before calling kneighbors."
@@ -97,4 +97,3 @@ class KNNClassifier:
         """Return neighbor indices for explainability purposes."""
         _, idx = self.kneighbors(X)
         return idx.tolist()
-

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from sklearn.model_selection import train_test_split
 
 
@@ -18,13 +18,19 @@ def load_dataset(path: str) -> pd.DataFrame:
 
 def train_val_test_split(
     df: pd.DataFrame,
+    *,
     target: str = "Target",
-    train: float = 0.6,
-    val: float = 0.2,
-    test: float = 0.2,
+    splits: tuple[float, float, float] = (0.6, 0.2, 0.2),
     seed: int = 42,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Create stratified train/validation/test splits."""
+    if len(splits) != 3:
+        msg = "splits must contain exactly three proportions (train, val, test)."
+        raise ValueError(msg)
+    if not np.isclose(sum(splits), 1.0):
+        msg = "train/val/test proportions must sum to 1.0."
+        raise ValueError(msg)
+    train, val, test = splits
     train_df, temp_df = train_test_split(
         df,
         test_size=(1 - train),
@@ -118,4 +124,3 @@ def apply_transformers(
     X_cat = X_cat[ohe_cols] if ohe_cols else X_cat
 
     return pd.concat([X_num, X_cat], axis=1), y
-
