@@ -1,0 +1,14 @@
+{
+  "best_depth": 3,
+  "f1_val_map": {
+    "3": 1.0,
+    "5": 1.0,
+    "7": 1.0,
+    "9": 1.0
+  },
+  "test_metrics": {
+    "accuracy": 1.0,
+    "f1_binary": 1.0,
+    "f1_macro": 1.0
+  }
+}
