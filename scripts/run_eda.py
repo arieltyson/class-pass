@@ -1,124 +1,75 @@
-"""Generate exploratory data analysis and preprocessing verification artifacts."""
-
 from __future__ import annotations
 
 import argparse
 import json
-import sys
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import pandas as pd
 
-try:
-    from classpass.eda import (
-        categorical_cardinality,
-        compute_missingness,
-        numerical_summary,
-        summarize_dataframe,
-    )
-    from classpass.preprocess import (
-        apply_transformers,
-        fit_transformers,
-        load_dataset,
-        train_val_test_split,
-    )
-except ModuleNotFoundError:
-    if TYPE_CHECKING:
-        raise
-    SRC_ROOT = Path(__file__).resolve().parents[1] / "src"
-    if str(SRC_ROOT) not in sys.path:
-        sys.path.insert(0, str(SRC_ROOT))
-    from classpass.eda import (
-        categorical_cardinality,
-        compute_missingness,
-        numerical_summary,
-        summarize_dataframe,
-    )
-    from classpass.preprocess import (
-        apply_transformers,
-        fit_transformers,
-        load_dataset,
-        train_val_test_split,
-    )
+from src.classpass.data import load_students, make_binary_target
 
 
-def build_arg_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Run EDA and preprocessing sanity checks for the ClassPass dataset."
-    )
-    parser.add_argument("--data", required=True, help="Path to the raw CSV dataset.")
-    parser.add_argument("--target", default="Target", help="Target column name.")
-    parser.add_argument(
-        "--outdir",
-        default="reports/eda",
-        help="Directory to store generated EDA artifacts.",
-    )
-    parser.add_argument(
-        "--top-k",
-        type=int,
-        default=5,
-        help="Number of top categories to record for categorical features.",
-    )
-    parser.add_argument(
-        "--scaler",
-        choices=["standard", "minmax", "none"],
-        default="standard",
-        help="Scaling strategy to validate during preprocessing.",
-    )
-    return parser
+def summarize(df: pd.DataFrame, target_col: str) -> dict:
+    summary: dict = {}
+
+    summary["n_rows"] = int(df.shape[0])
+    summary["n_cols"] = int(df.shape[1])
+
+    # missingness per column
+    missing = df.isna().mean().to_dict()
+    summary["missing_fraction"] = missing
+
+    # target distribution
+    value_counts = df[target_col].value_counts(normalize=False)
+    value_counts_norm = df[target_col].value_counts(normalize=True)
+    summary["target_counts"] = value_counts.to_dict()
+    summary["target_fraction"] = value_counts_norm.to_dict()
+
+    # numeric stats
+    num_df = df.select_dtypes(include=["number"])
+    summary["numeric_summary"] = num_df.describe().transpose().to_dict()
+
+    # top categories for non-numeric
+    cat_df = df.select_dtypes(exclude=["number"])
+    top_values = {}
+    for col in cat_df.columns:
+        top_values[col] = cat_df[col].value_counts().head(5).to_dict()
+    summary["categorical_top_values"] = top_values
+
+    return summary
 
 
-def ensure_outdir(path: str) -> Path:
-    outdir = Path(path)
-    outdir.mkdir(parents=True, exist_ok=True)
-    return outdir
-
-
-def run_preprocessing_checks(df: pd.DataFrame, target: str, scaler: str) -> dict[str, str]:
-    """Attempt to fit preprocessing pipeline and report derived metadata."""
-    train_df, val_df, test_df = train_val_test_split(df, target=target)
-    X_train, _, state = fit_transformers(train_df, target=target, scaler=scaler)
-    X_val, _ = apply_transformers(val_df, state, target=target)
-    X_test, _ = apply_transformers(test_df, state, target=target)
-    return {
-        "train_shape": f"{X_train.shape[0]} x {X_train.shape[1]}",
-        "val_shape": f"{X_val.shape[0]} x {X_val.shape[1]}",
-        "test_shape": f"{X_test.shape[0]} x {X_test.shape[1]}",
-        "n_numeric": str(len(state["num_cols"])),
-        "n_categorical": str(len(state["cat_cols"])),
-    }
-
-
-def main() -> None:
-    parser = build_arg_parser()
+def main():
+    parser = argparse.ArgumentParser(description="Run EDA on student dataset.")
+    parser.add_argument("--data", type=str, required=True, help="Path to students.csv")
+    parser.add_argument("--target", type=str, default="Target", help="Original target column")
+    parser.add_argument("--binary", action="store_true", help="Add binary target column")
+    parser.add_argument("--outdir", type=str, default="reports/eda", help="Output directory")
     args = parser.parse_args()
 
-    df = load_dataset(args.data)
-    outdir = ensure_outdir(args.outdir)
+    df = load_students(args.data)
 
-    high_level = summarize_dataframe(df, args.target)
-    missingness = compute_missingness(df)
-    numeric_stats = numerical_summary(df)
-    categorical_stats = categorical_cardinality(df, top_k=args.top_k)
-    preprocessing = run_preprocessing_checks(df, args.target, args.scaler)
+    if args.binary:
+        df = make_binary_target(df, original_col=args.target, new_col="BinaryTarget")
+        target_col = "BinaryTarget"
+    else:
+        target_col = args.target
 
-    with open(outdir / "summary.json", "w", encoding="utf-8") as fh:
-        json.dump(
-            {
-                "overview": high_level,
-                "preprocessing": preprocessing,
-            },
-            fh,
-            indent=2,
-        )
+    outdir = Path(args.outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
 
-    missingness.to_csv(outdir / "missingness.csv", index=False)
-    numeric_stats.to_csv(outdir / "numeric_summary.csv", index=False)
-    with open(outdir / "categorical_top_values.json", "w", encoding="utf-8") as fh:
-        json.dump(categorical_stats, fh, indent=2)
+    summary = summarize(df, target_col=target_col)
 
-    print("EDA artifacts written to", outdir.resolve())
+    # JSON summary
+    json_path = outdir / "eda_summary.json"
+    with json_path.open("w", encoding="utf-8") as f:
+        json.dump(summary, f, indent=2)
+
+    # save simple CSV of target distribution
+    target_counts = pd.Series(summary["target_counts"], name="count")
+    target_counts.to_csv(outdir / "target_counts.csv")
+
+    print(f"[EDA] Wrote EDA summary to {json_path}")
 
 
 if __name__ == "__main__":

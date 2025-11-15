@@ -1,8 +1,9 @@
-"""ClassPass package providing custom models, preprocessing, and evaluation utilities."""
+"""
+ClassPass: kNN-based early risk detector for student success.
 
-__all__ = [
-    "knn",
-    "preprocess",
-    "metrics",
-    "plotting",
-]
+Main pieces:
+- data: loading dataset and target mapping
+- preprocessing: encoding, scaling, splitting
+- knn: custom kNN classifier with neighbor explanations
+- evaluation: metrics and plotting helpers
+"""

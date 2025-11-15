@@ -1,114 +1,158 @@
-# ClassPass Predictor 🎓📊
+# 📘 **ClassPass – Early Student Risk Detection (Custom ML Pipeline)**
 
-# A three-class student success analytics pipeline built with modern Python & ML Libraries
+**ClassPass** is a fully reproducible, interpretable machine-learning pipeline for early dropout-risk detection in higher education programs.  
+It implements:
 
-📡 Designed to flag Dropout, Enrolled, and Graduate outcomes early using custom ML models and
-transparent explainability workflows.
+- A **custom from-scratch k-Nearest Neighbors classifier**  
+- A **preprocessing and encoding pipeline**  
+- **EDA + data auditing tools**  
+- Train/validation/test splitting with hyperparameter tuning  
+- **Explainability** via neighbor inspection  
+- Model evaluation (F1, macro-F1, confusion matrix)
 
-# Guiding Student Success at Scale 🌐
+The system uses the UCI *Predict Students’ Dropout and Academic Success* dataset and reduces the original 3-class label into a binary target:
 
-## Project Description 🗺️
+- **At Risk** (Dropout)  
+- **Continue** (Enrolled + Graduate)
 
-ClassPass delivers an interpretable enrollment-time risk detector for higher education programs.
-The system pairs handcrafted k-Nearest Neighbors and Decision Tree classifiers with calibration
-and cost-sensitive evaluation, highlighting both neighborhood exemplars and global rule-based
-insights. Our pipeline ingests the UCI _Predict Students' Dropout and Academic Success_ dataset,
-audits class imbalance and missingness, and produces reproducible figures for macro-F1, precision–
-recall behavior, and reliability.
-
-## Demo:
-
-https://github.com/arieltyson/class-pass
-
-## Quickstart 🧭
-
-Spin up the baseline experiment from the repository root.
-
-```bash
-python -m venv .venv                             # Create isolated environment
-source .venv/bin/activate                        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt                  # Install project dependencies
-python -m scripts.train_baseline \
-  --data data/raw/students.csv \
-  --target Target \
-  --k 7 \
-  --scaler standard \
-  --distance euclidean                           # Train baseline + write figures/artifacts
-```
-
-### Data Audit & Preprocessing Check
-
-Generate EDA summaries and sanity-check the preprocessing pipeline before training:
-
-```bash
-python -m scripts.run_eda \
-  --data data/raw/students.csv \
-  --target Target \
-  --outdir reports/eda
-```
-
-- Outputs JSON/CSV artifacts describing class balance, missingness, numeric stats, and categorical top values.
-- Verifies that the preprocessing stack (encoding, scaling, stratified splits) runs without errors.
-
-### Expected Output
-
-Running the baseline script prints experiment metrics and saves figures under
-`reports/figures/`.
-
-- Console shows macro-F1, Brier score, per-class Average Precision, and a confusion matrix.
-- `reports/figures/cm_baseline.png` visualizes class-level confusion counts.
-- `reports/figures/pr_curves_baseline.png` provides per-class precision–recall curves.
-- `reports/figures/reliability_baseline.png` plots probability calibration across bins.
-- `artifacts.json` captures run metadata (k, distance, scaler) plus summary metrics.
-
-### Prerequisites 📋
-
-- Python 3.11+
-- pip 23+
-- Virtualenv support (recommended)
-- Access to the UCI dataset CSV placed at `data/raw/students.csv`
-
-### Frameworks
-
-- Python standard library (`argparse`, `pathlib`, `json`)
-- NumPy
-- pandas
-- scikit-learn
-- Matplotlib
-- tqdm (progress indicators)
-
-### Packages
-
-- joblib (artifact persistence and caching)
-- pytest (unit testing)
-- black (source formatting)
-- ruff (linting)
-
-## Skills Demonstrated 🖌️
-
-ClassPass emphasizes interpretable machine learning for academic risk detection, showcasing how
-classical models and evaluation techniques can be orchestrated for reliable early-warning systems.
-
-- **Data Pipeline**: Reproducible ingestion, stratified train/val/test splitting, and dual-mode
-  scaling with one-hot encoding for mixed feature types.
-- **Custom Models**: From-scratch kNN with configurable distance metrics and explainable neighbor
-  lookups; forthcoming Decision Tree with entropy/Gini splits, pruning, and max-depth controls.
-- **Explainability**: Local exemplar retrieval from kNN, plus global rule summaries and feature
-  importance planned for the tree.
-- **Evaluation Rigor**: Macro-F1, per-class PR curves, reliability diagrams, Brier scores, and
-  cost-sensitive threshold audits guided by class imbalance.
-- **Automation**: Continuous integration (black, ruff, pytest) and scripted training hooks for
-  future nested cross-validation runs.
-
-## Contributing ⚙️
-
-We welcome insightful pull requests, benchmarking ideas, and reporting improvements. Fork the
-repository, branch from `dev`, and submit focused, well-tested changes. Please include figures or
-metric tables when altering modeling behavior so the team can validate performance shifts quickly.
-
-## License 🪪
-
-This project is distributed under the [MIT License](LICENSE) © 2025 ClassPass team (Ariel Tyson &
-Phil Akagu-Jones). Feel free to use, modify, and share the code with attribution.
+Everything is implemented from first principles — no sklearn KNN, no automated pipelines — to demonstrate understanding of ML fundamentals and interpretability.
 
 ---
+
+# 🚀 **Features**
+
+### **🔧 Custom ML Model**
+- Handmade **kNN classifier** supporting:
+  - Euclidean / Manhattan distance  
+  - Soft probability estimation  
+  - Local neighbor explanations:
+    > “3 out of your 5 most similar students were At Risk.”
+
+### **📊 EDA & Data Auditing**
+- Missingness report  
+- Class distribution  
+- Top categorical values  
+- Numerical summary statistics  
+- Outputs JSON + CSV artifacts
+
+### **🧹 Preprocessing Pipeline**
+- Automatic feature-type detection (numeric vs categorical)
+- One-hot encoding  
+- Standard or MinMax scaling  
+- Stratified train/validation/test splitting  
+
+### **📈 Evaluation Tools**
+- F1 (binary + macro)  
+- Accuracy  
+- Confusion matrix plot  
+- Validation sweep over k  
+- F1 vs k plot  
+- Artifacts JSON saved for reproducibility  
+
+### **🧪 Full Testing Suite**
+- Tests for:
+  - EDA structure  
+  - kNN correctness  
+  - Probability outputs  
+  - Neighbor explanations  
+  - Comparison vs sklearn KNN (sanity-check)
+
+---
+
+# 📁 **Project Structure**
+
+```
+class-pass/
+│
+├── src/classpass/
+│   ├── __init__.py
+│   ├── data.py
+│   ├── preprocessing.py
+│   ├── knn.py
+│   └── evaluation.py
+│
+├── scripts/
+│   ├── run_eda.py
+│   └── train_baseline.py
+│
+├── data/
+│   └── raw/
+│       └── students.csv
+│
+├── reports/
+│   ├── eda/
+│   └── figures/
+│
+├── tests/
+│   ├── test_eda.py
+│   ├── test_knn.py
+│   └── __init__.py
+│
+├── CMPT-310-Proposal.pdf
+├── README.md
+├── requirements.txt
+├── pyproject.toml
+└── pytest.ini
+```
+
+---
+
+# 🧰 **Installation**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+Place the UCI dataset in:
+
+```
+data/raw/students.csv
+```
+
+---
+
+# 🔎 **Run EDA**
+
+```bash
+python -m scripts.run_eda   --data data/raw/students.csv   --target Target   --binary   --outdir reports/eda
+```
+
+---
+
+# 🤖 **Train Baseline kNN**
+
+```bash
+python -m scripts.train_baseline   --data data/raw/students.csv   --target Target   --binary   --scaler standard   --distance euclidean   --k-grid 3,5,7,9,11   --outdir reports/figures
+```
+
+---
+
+# 🧪 **Run Tests**
+
+```bash
+pytest -q
+```
+
+---
+
+# 📈 Example Performance
+
+```
+[Train] Best k: 3
+Validation F1(At Risk): ~0.78
+
+[Test metrics]
+  accuracy:   0.896
+  f1_binary:  0.819
+  f1_macro:   0.873
+```
+
+---
+
+# 📄 **License**
+
+MIT License © 2025  
+Ariel Tyson & Phil Akagu-Jones  

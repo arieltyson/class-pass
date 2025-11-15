@@ -1,130 +1,184 @@
-"""Command-line entry point to train and evaluate the kNN baseline."""
-
 from __future__ import annotations
 
 import argparse
 import json
-import os
-import sys
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import List
 
-from sklearn.preprocessing import LabelEncoder
+import numpy as np
 
-try:
-    from classpass.knn import KNNClassifier
-    from classpass.metrics import brier, confusion, macro_f1, pr_curves
-    from classpass.plotting import plot_confusion_matrix, plot_pr_curves, plot_reliability
-    from classpass.preprocess import (
-        apply_transformers,
-        fit_transformers,
-        load_dataset,
-        train_val_test_split,
+from src.classpass.data import load_students, make_binary_target
+from src.classpass.evaluation import compute_metrics, plot_confusion, plot_f1_vs_k
+from src.classpass.knn import KNNClassifier
+from src.classpass.preprocessing import preprocess_and_split
+
+
+def parse_k_grid(k_arg: str) -> List[int]:
+    return [int(x) for x in k_arg.split(",") if x.strip()]
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Train baseline kNN for student risk prediction."
     )
-except ModuleNotFoundError:
-    if TYPE_CHECKING:
-        raise
-    SRC_ROOT = Path(__file__).resolve().parents[1] / "src"
-    if str(SRC_ROOT) not in sys.path:
-        sys.path.insert(0, str(SRC_ROOT))
-    from classpass.knn import KNNClassifier
-    from classpass.metrics import brier, confusion, macro_f1, pr_curves
-    from classpass.plotting import plot_confusion_matrix, plot_pr_curves, plot_reliability
-    from classpass.preprocess import (
-        apply_transformers,
-        fit_transformers,
-        load_dataset,
-        train_val_test_split,
-    )
-
-
-def build_arg_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Train the ClassPass kNN baseline.")
-    parser.add_argument("--data", required=True, help="Path to the CSV dataset.")
-    parser.add_argument("--target", default="Target", help="Target column name.")
-    parser.add_argument("--k", type=int, default=7, help="Number of neighbors.")
+    parser.add_argument("--data", type=str, required=True, help="Path to students.csv")
     parser.add_argument(
-        "--distance",
-        choices=["euclidean", "manhattan"],
-        default="euclidean",
-        help="Distance metric for kNN.",
+        "--target",
+        type=str,
+        default="Target",
+        help="Original target column (before binary mapping)",
+    )
+    parser.add_argument(
+        "--binary",
+        action="store_true",
+        help="Use binary target At Risk vs Continue.",
+    )
+    parser.add_argument(
+        "--drop-cols",
+        type=str,
+        default="",
+        help="Comma-separated list of columns to drop before training.",
     )
     parser.add_argument(
         "--scaler",
-        choices=["standard", "minmax", "none"],
+        type=str,
         default="standard",
-        help="Numerical scaling strategy.",
+        choices=["standard", "minmax"],
+        help="Scaler for numeric features.",
+    )
+    parser.add_argument(
+        "--distance",
+        type=str,
+        default="euclidean",
+        choices=["euclidean", "manhattan"],
+        help="Distance metric for kNN.",
+    )
+    parser.add_argument(
+        "--k-grid",
+        type=str,
+        default="3,5,7,9,11",
+        help="Grid of k values, e.g. '3,5,7,9'.",
+    )
+    parser.add_argument(
+        "--test-size",
+        type=float,
+        default=0.2,
+        help="Fraction of data for test split.",
+    )
+    parser.add_argument(
+        "--val-size",
+        type=float,
+        default=0.2,
+        help="Fraction of full data reserved for validation (inside train+val).",
     )
     parser.add_argument(
         "--outdir",
+        type=str,
         default="reports/figures",
-        help="Directory to store generated figures.",
+        help="Directory for plots and metrics artifact.",
     )
     parser.add_argument(
-        "--bins",
+        "--random-state",
         type=int,
-        default=10,
-        help="Number of bins for reliability diagrams.",
+        default=42,
+        help="Random seed for splitting.",
     )
-    return parser
+    args = parser.parse_args()
 
+    df = load_students(args.data)
 
-def main() -> None:
-    args = build_arg_parser().parse_args()
+    if args.binary:
+        df = make_binary_target(df, original_col=args.target, new_col="BinaryTarget")
+        target_col = "BinaryTarget"
+    else:
+        target_col = args.target
 
-    df = load_dataset(args.data)
-    train_df, val_df, test_df = train_val_test_split(df, target=args.target)
+    drop_cols = [c for c in args.drop_cols.split(",") if c.strip()]
 
-    Xtr, ytr, state = fit_transformers(train_df, target=args.target, scaler=args.scaler)
-    Xva, yva = apply_transformers(val_df, state, target=args.target)
-    Xte, yte = apply_transformers(test_df, state, target=args.target)
-
-    le = LabelEncoder().fit(ytr)
-    classes = le.classes_.tolist()
-
-    clf = KNNClassifier(k=args.k, distance=args.distance).fit(Xtr.values, ytr.values)
-    y_pred = clf.predict(Xte.values)
-
-    f1 = macro_f1(yte.values, y_pred)
-    cm = confusion(yte.values, y_pred)
-
-    proba = clf.predict_proba(Xte.values)
-    curves = pr_curves(yte.values, proba, classes)
-    brier_mc = brier(yte.values, proba, classes)
-
-    print(f"Macro-F1: {f1:.3f}")
-    print("Confusion matrix (rows=true, cols=pred):")
-    print(cm)
-    print(f"Brier (multiclass avg): {brier_mc:.4f}")
-    for cls, (_, _, _, ap) in curves.items():
-        print(f"AP({cls}): {ap:.3f}")
-
-    Path(args.outdir).mkdir(parents=True, exist_ok=True)
-    plot_confusion_matrix(cm, classes, os.path.join(args.outdir, "cm_baseline.png"))
-    plot_pr_curves(curves, os.path.join(args.outdir, "pr_curves_baseline.png"))
-    plot_reliability(
-        yte.values,
-        proba,
-        classes,
-        args.bins,
-        os.path.join(args.outdir, "reliability_baseline.png"),
+    splits = preprocess_and_split(
+        df=df,
+        target_col=target_col,
+        drop_cols=drop_cols,
+        scaler=args.scaler,
+        test_size=args.test_size,
+        val_size=args.val_size,
+        random_state=args.random_state,
     )
 
-    with open("artifacts.json", "w", encoding="utf-8") as fh:
-        json.dump(
-            {
-                "macro_f1": float(f1),
-                "brier": float(brier_mc),
-                "classes": classes,
-                "params": {
-                    "k": args.k,
-                    "distance": args.distance,
-                    "scaler": args.scaler,
-                },
-            },
-            fh,
-            indent=2,
-        )
+    k_values = parse_k_grid(args.k_grid)
+
+    best_k = None
+    best_f1 = -np.inf
+    f1_per_k = []
+
+    print("[Train] Tuning k on validation set...")
+
+    for k in k_values:
+        clf = KNNClassifier(k=k, distance=args.distance)
+        clf.fit(splits.X_train, splits.y_train)
+        y_val_pred = clf.predict(splits.X_val)
+
+        metrics = compute_metrics(splits.y_val, y_val_pred)
+        f1 = metrics["f1_binary"]
+        f1_per_k.append(f1)
+
+        print(f"  k={k:2d} -> val F1(At Risk) = {f1:.4f}")
+
+        if f1 > best_f1:
+            best_f1 = f1
+            best_k = k
+
+    assert best_k is not None
+    print(f"[Train] Best k on validation: {best_k} (F1={best_f1:.4f})")
+
+    # retrain on train + val using best k, then evaluate on test
+    X_train_full = np.vstack([splits.X_train, splits.X_val])
+    y_train_full = np.concatenate([splits.y_train, splits.y_val])
+
+    final_clf = KNNClassifier(k=best_k, distance=args.distance)
+    final_clf.fit(X_train_full, y_train_full)
+
+    y_test_pred = final_clf.predict(splits.X_test)
+    test_metrics = compute_metrics(splits.y_test, y_test_pred)
+
+    print("\n[Test metrics]")
+    for name, value in test_metrics.items():
+        print(f"  {name}: {value:.4f}")
+
+    outdir = Path(args.outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    labels = sorted(np.unique(splits.y_test).tolist())
+    plot_confusion(
+        splits.y_test,
+        y_test_pred,
+        labels=labels,
+        outpath=outdir / "cm_knn.png",
+    )
+
+    plot_f1_vs_k(
+        k_values,
+        f1_per_k,
+        outpath=outdir / "f1_vs_k.png",
+    )
+
+    # save a JSON summarizing the run
+    artifact = {
+        "data_path": str(Path(args.data).resolve()),
+        "target_col": target_col,
+        "binary": args.binary,
+        "drop_cols": drop_cols,
+        "scaler": args.scaler,
+        "distance": args.distance,
+        "k_values": k_values,
+        "best_k": best_k,
+        "val_f1_per_k": f1_per_k,
+        "test_metrics": test_metrics,
+    }
+    with (outdir / "artifacts_knn.json").open("w", encoding="utf-8") as f:
+        json.dump(artifact, f, indent=2)
+
+    print(f"\n[Done] Saved confusion matrix, F1-vs-k plot, and artifacts to {outdir}")
 
 
 if __name__ == "__main__":
