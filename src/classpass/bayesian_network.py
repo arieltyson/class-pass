@@ -6,22 +6,10 @@ from dataclasses import dataclass
 
 @dataclass
 class CPT:
-    """Conditional Probability Table.
-    Stores P(node=1 | parents). Parents are binary.
-    """
     table: dict  # key: tuple of parent values, value: probability of node=1
 
 
 class BayesianNetwork:
-    """
-    A simple manually-structured Bayesian Network for dropout risk inference.
-
-    Nodes:
-        LowGrades      (no parents)
-        FinancialRisk  (no parents)
-        LowEngagement  (no parents)
-        DropoutRisk    (parents = [LowGrades, FinancialRisk, LowEngagement])
-    """
 
     def __init__(self, grade_thresh=10.0, engagement_thresh=3):
         self.grade_thresh = grade_thresh
