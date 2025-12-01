@@ -30,6 +30,7 @@ def main():
 
     if args.binary:
         df = make_binary_target(df, args.target, "BinaryTarget")
+        df = df.drop(columns=[args.target])
         target_col = "BinaryTarget"
     else:
         target_col = args.target

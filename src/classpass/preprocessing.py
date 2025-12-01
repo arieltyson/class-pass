@@ -23,10 +23,21 @@ class PreprocessedSplits:
 
 
 def _infer_feature_types(df: pd.DataFrame, target_col: str, drop_cols: List[str]) -> Tuple[List[str], List[str]]:
-    cols = [c for c in df.columns if c not in drop_cols + [target_col]]
-    cat_cols = [c for c in cols if df[c].dtype == "object" or str(df[c].dtype).startswith("category")]
+    # Exclude target_col only if it exists in df
+    exclude = set(drop_cols)
+    if target_col in df.columns:
+        exclude.add(target_col)
+
+    cols = [c for c in df.columns if c not in exclude]
+
+    cat_cols = [
+        c for c in cols
+        if df[c].dtype == "object" or str(df[c].dtype).startswith("category")
+    ]
     num_cols = [c for c in cols if c not in cat_cols]
+
     return num_cols, cat_cols
+
 
 # one hot encode categories and scale nums
 def build_preprocessor(
@@ -95,11 +106,11 @@ def preprocess_and_split(
     )
 
     preprocessor, num_cols, cat_cols = build_preprocessor(
-        df=X_train_val.assign(**{target_col: y_train_val}),  # for type inference
+        df=X_train,  
         target_col=target_col,
         drop_cols=drop_cols,
         scaler=scaler,
-    )
+)
 
     X_train_proc = preprocessor.fit_transform(X_train)
     X_val_proc = preprocessor.transform(X_val)

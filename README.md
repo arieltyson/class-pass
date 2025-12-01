@@ -1,15 +1,12 @@
-# 📘 **ClassPass – Early Student Risk Detection (Custom ML Pipeline)**  
+# 📘 **ClassPass – Early Student Risk Detection (Custom ML Pipeline + Bayesian Network)**  
 
-**ClassPass** is a fully reproducible, interpretable machine-learning pipeline for early dropout-risk detection in higher education programs.  
-It implements:
+**ClassPass** is a fully reproducible, interpretable machine learning and probabilistic AI system for early dropout risk detection in higher education programs.  
 
-- A **custom from-scratch k-Nearest Neighbors classifier**  
-- A **custom Decision Tree classifier** (entropy/Gini, interpretable rule extraction)  
-- A full preprocessing and encoding pipeline  
-- Separate scripts for EDA, kNN training, and Decision Tree training  
-- Explainability tools (neighbors + rule extraction)  
-- Validation-based model selection (tuning *k* or *max_depth*)  
-- Train/val/test splits, metrics, confusion matrices, and artifacts
+It now implements the following AI paradigms:
+
+- **Custom k-Nearest Neighbours classifier**  
+- **Custom Decision Tree classifier**  
+- **Bayesian Network for probabilistic inference**  
 
 The system uses the UCI *Predict Students’ Dropout and Academic Success* dataset and maps the original 3-class target into a binary label:
 
@@ -22,95 +19,40 @@ Everything is implemented from first principles to demonstrate clear ML fundamen
 
 # 🚀 **Features**
 
-### **🔧 Custom ML Models**
-#### **kNN (from scratch)**
-- Euclidean / Manhattan distance  
-- Predict + predict_proba  
-- Local neighbor explanations  
+## 🔧 Custom ML Models
 
-#### **Decision Tree (from scratch)**
+### **kNN (from scratch)**
+- Euclidean / Manhattan distance  
+- Predict 
+- Neighbour explanations  
+
+### **Decision Tree (from scratch)**
 - Entropy or Gini impurity  
 - Information gain  
-- Customizable max depth + min samples split  
-- Human-readable rule extraction  
-- Predict + predict_proba  
+- Customizable max depth  
+- Rule extraction  
+- Predict 
 
 ---
 
-### **📊 EDA & Data Auditing**
-- Missingness report  
-- Class balance  
-- Basic numeric statistics  
-- Top categorical values  
-- JSON + CSV outputs
+## 🧠 Bayesian Network 
 
----
-
-### **🧹 Preprocessing**
-- Automatic detection of numerical vs. categorical features  
-- One-hot encoding  
-- Standard or MinMax scaling  
-- Stratified train/val/test splitting  
-
----
-
-### **📈 Evaluation Tools**
-- F1 (binary + macro)  
-- Accuracy  
-- Confusion Matrix (with saved PNG)  
-- F1 vs k plot  
-- Artifacts JSON  
-
----
-
-### **🧪 Testing**
-- `test_eda.py` — validates EDA summary structure  
-- `test_knn.py` — validates kNN correctness  
-- `test_decision_tree.py` — validates tree predictions + rule generation  
-
----
-
-# 📁 **Project Structure**
+A simple, interpretable Bayesian Network modelling dropout risk using:
 
 ```
-class-pass/
-│
-├── src/classpass/
-│   ├── __init__.py
-│   ├── data.py
-│   ├── preprocessing.py
-│   ├── knn.py
-│   ├── decision_tree.py
-│   └── evaluation.py
-│
-├── scripts/
-│   ├── run_eda.py
-│   ├── train_baseline.py
-│   └── run_tree.py
-│
-├── data/
-│   └── raw/
-│       └── students.csv
-│
-├── reports/
-│   ├── eda/
-│   ├── figures/
-│   └── figures_tree/
-│
-├── tests/
-│   ├── test_eda.py
-│   ├── test_knn.py
-│   ├── test_decision_tree.py
-│   └── __init__.py
-│
-├── CMPT-310-Proposal.pdf
-├── README.md
-├── requirements.txt
-├── pyproject.toml
-└── pytest.ini
+LowGrades        \\
+FinancialRisk ----> DropoutRisk
+LowEngagement    //
 ```
 
+Capabilities:
+- Inference via enumeration  
+- CPTs learned from the dataset  
+- Produces dropout probabilities    
+- Complements ML models for comparison  
 ---
+
+
 
 # 🧰 **Installation**
 
@@ -121,53 +63,97 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-Place the dataset at:
+Dataset goes in:
 
 ```
 data/raw/students.csv
 ```
-
-The loader automatically handles semicolon-delimited UCI CSVs.
 
 ---
 
 # 🔎 **1. Run EDA**
 
 ```bash
-python -m scripts.run_eda   --data data/raw/students.csv   --target Target   --binary   --outdir reports/eda
-```
-
----
-
-# 🤖 **2. Train Baseline kNN**
-
-```bash
-python -m scripts.train_baseline   --data data/raw/students.csv   --target Target   --binary   --scaler standard   --distance euclidean   --k-grid 3,5,7,9,11   --outdir reports/figures
+python -m scripts.run_eda \
+  --data data/raw/students.csv \
+  --target Target \
+  --binary \
+  --outdir reports/eda
 ```
 
 Outputs:
+- `eda_summary.json`  
+- `target_counts.csv`
 
+---
+
+# 🤖 **2. Train kNN Baseline**
+
+```bash
+python -m scripts.train_baseline \
+  --data data/raw/students.csv \
+  --target Target \
+  --binary \
+  --scaler standard \
+  --distance euclidean \
+  --k-grid 3,5,7,9,11 \
+  --outdir reports/figures
+```
+
+Outputs:
 - `cm_knn.png`  
 - `f1_vs_k.png`  
-- `artifacts_knn.json`
+- `artifacts_knn.json`  
 
 ---
 
-# 🌳 **3. Train Decision Tree (NEW)**
+# 🌳 **3. Train Decision Tree**
 
 ```bash
-python -m scripts.run_tree   --data data/raw/students.csv   --target Target   --binary   --criterion entropy   --depth-grid 3,5,7,9   --min-samples-split 2   --outdir reports/figures_tree
+python -m scripts.run_tree \
+  --data data/raw/students.csv \
+  --target Target \
+  --binary \
+  --criterion entropy \
+  --depth-grid 3,5,7,9 \
+  --outdir reports/figures_tree
 ```
 
 Outputs:
-
 - `cm_tree.png`  
 - `tree_rules.txt`  
 - `tree_artifacts.json`  
 
 ---
 
-# 🧪 **4. Run Tests**
+# 🧠 **4. Bayesian Network**
+
+Run:
+
+```bash
+python -m scripts.run_bn \
+  --data data/raw/students.csv \
+  --target Target \
+  --binary
+```
+
+Outputs:
+- Bayesian Network metrics printed to console  
+
+Example output:
+
+```
+[Bayesian Network Results]
+  accuracy: X.XX
+  f1_binary: X.XX
+  f1_macro: X.XX
+```
+
+The BN is intentionally simple to highlight probabilistic reasoning and improve interpretability.
+
+---
+
+# 🧪 **5. Run Tests**
 
 ```bash
 pytest -q
@@ -176,18 +162,45 @@ pytest -q
 Expected:
 
 ```
-7 passed in X.XXs
+11 passed in X.XXs
 ```
 
 ---
-
-# 📈 Example kNN Performance
+# 📁 **Project Structure**
 
 ```
-Validation F1(At Risk): ~0.78
-Test accuracy:     ~0.896
-Test F1_binary:    ~0.819
-Test F1_macro:     ~0.873
+class-pass/
+│
+├── src/classpass/
+│   ├── data.py
+│   ├── preprocessing.py
+│   ├── knn.py
+│   ├── decision_tree.py
+│   ├── bayesian_network.py      
+│   └── evaluation.py
+│
+├── scripts/
+│   ├── run_eda.py
+│   ├── train_baseline.py
+│   ├── run_tree.py
+│   └── run_bn.py                
+│
+├── tests/
+│   ├── test_eda.py
+│   ├── test_knn.py
+│   ├── test_decision_tree.py
+│   └── test_bayesian_network.py
+│
+├── data/raw/students.csv
+├── reports/
+│   ├── eda/
+│   ├── figures/
+│   └── figures_tree/
+│
+├── README.md
+├── requirements.txt
+├── pyproject.toml
+└── pytest.ini
 ```
 
 ---
@@ -195,4 +208,4 @@ Test F1_macro:     ~0.873
 # 📄 **License**
 
 MIT License © 2025  
-Ariel Tyson & Phil Akagu-Jones  
+Ariel Tyson & Phil Akagu-Jones
