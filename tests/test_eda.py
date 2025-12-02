@@ -1,17 +1,21 @@
 import pandas as pd
 
-from src.classpass.data import make_binary_target
 from scripts.run_eda import summarize
+from src.classpass.data import make_binary_target
+
+ABSENCES_MEAN_EXPECTED = 5
 
 
 def test_eda_summary_keys():
     # create a tiny dummy dataset
-    df = pd.DataFrame({
-        "Target": ["Dropout", "Graduate", "Enrolled"],
-        "Age": [20, 22, 19],
-        "Gender": ["M", "F", "F"],
-        "Absences": [5, 0, 2],
-    })
+    df = pd.DataFrame(
+        {
+            "Target": ["Dropout", "Graduate", "Enrolled"],
+            "Age": [20, 22, 19],
+            "Gender": ["M", "F", "F"],
+            "Absences": [5, 0, 2],
+        }
+    )
 
     # add binary target (At Risk vs Continue)
     df = make_binary_target(df, "Target", "BinaryTarget")
@@ -33,11 +37,13 @@ def test_eda_summary_keys():
 
 
 def test_eda_missing_fraction():
-    df = pd.DataFrame({
-        "Target": ["Dropout", "Graduate", None],
-        "Age": [20, None, 19],
-        "Gender": ["M", "F", "F"],
-    })
+    df = pd.DataFrame(
+        {
+            "Target": ["Dropout", "Graduate", None],
+            "Age": [20, None, 19],
+            "Gender": ["M", "F", "F"],
+        }
+    )
 
     df = make_binary_target(df, "Target", "BinaryTarget")
     summary = summarize(df, target_col="BinaryTarget")
@@ -51,14 +57,16 @@ def test_eda_missing_fraction():
 
 
 def test_eda_numeric_summary():
-    df = pd.DataFrame({
-        "Target": ["Dropout", "Graduate", "Enrolled"],
-        "Absences": [10, 0, 5],
-    })
+    df = pd.DataFrame(
+        {
+            "Target": ["Dropout", "Graduate", "Enrolled"],
+            "Absences": [10, 0, 5],
+        }
+    )
 
     df = make_binary_target(df, "Target", "BinaryTarget")
     summary = summarize(df, target_col="BinaryTarget")
 
     numeric = summary["numeric_summary"]
     assert "Absences" in numeric["mean"]
-    assert numeric["mean"]["Absences"] == 5  # mean of [10,0,5]
+    assert numeric["mean"]["Absences"] == ABSENCES_MEAN_EXPECTED  # mean of [10,0,5]

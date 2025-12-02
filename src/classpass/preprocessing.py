@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder, StandardScaler, MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, StandardScaler
 
 
 @dataclass
@@ -19,10 +18,12 @@ class PreprocessedSplits:
     X_test: np.ndarray
     y_test: np.ndarray
     preprocessor: ColumnTransformer
-    feature_names: List[str]
+    feature_names: list[str]
 
 
-def _infer_feature_types(df: pd.DataFrame, target_col: str, drop_cols: List[str]) -> Tuple[List[str], List[str]]:
+def _infer_feature_types(
+    df: pd.DataFrame, target_col: str, drop_cols: list[str]
+) -> tuple[list[str], list[str]]:
     # Exclude target_col only if it exists in df
     exclude = set(drop_cols)
     if target_col in df.columns:
@@ -31,8 +32,7 @@ def _infer_feature_types(df: pd.DataFrame, target_col: str, drop_cols: List[str]
     cols = [c for c in df.columns if c not in exclude]
 
     cat_cols = [
-        c for c in cols
-        if df[c].dtype == "object" or str(df[c].dtype).startswith("category")
+        c for c in cols if df[c].dtype == "object" or str(df[c].dtype).startswith("category")
     ]
     num_cols = [c for c in cols if c not in cat_cols]
 
@@ -43,9 +43,9 @@ def _infer_feature_types(df: pd.DataFrame, target_col: str, drop_cols: List[str]
 def build_preprocessor(
     df: pd.DataFrame,
     target_col: str,
-    drop_cols: List[str] | None = None,
+    drop_cols: list[str] | None = None,
     scaler: str = "standard",
-) -> Tuple[ColumnTransformer, List[str], List[str]]:
+) -> tuple[ColumnTransformer, list[str], list[str]]:
     if drop_cols is None:
         drop_cols = []
 
@@ -70,11 +70,12 @@ def build_preprocessor(
 
     return preprocessor, num_cols, cat_cols
 
+
 # split in train / val / test, then preprocess
-def preprocess_and_split(
+def preprocess_and_split(  # noqa: PLR0913
     df: pd.DataFrame,
     target_col: str,
-    drop_cols: List[str] | None = None,
+    drop_cols: list[str] | None = None,
     scaler: str = "standard",
     test_size: float = 0.2,
     val_size: float = 0.2,
@@ -106,18 +107,18 @@ def preprocess_and_split(
     )
 
     preprocessor, num_cols, cat_cols = build_preprocessor(
-        df=X_train,  
+        df=X_train,
         target_col=target_col,
         drop_cols=drop_cols,
         scaler=scaler,
-)
+    )
 
     X_train_proc = preprocessor.fit_transform(X_train)
     X_val_proc = preprocessor.transform(X_val)
     X_test_proc = preprocessor.transform(X_test)
 
     # build feature names for later plots / explanations
-    feature_names: List[str] = []
+    feature_names: list[str] = []
     if num_cols:
         feature_names.extend(num_cols)
     if cat_cols:

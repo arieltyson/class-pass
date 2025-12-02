@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import argparse
-import pandas as pd
-from src.classpass.data import load_students, make_binary_target
+
 from src.classpass.bayesian_network import BayesianNetwork
+from src.classpass.data import load_students, make_binary_target
 from src.classpass.evaluation import compute_metrics
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -30,6 +33,7 @@ def main():
     print("[Bayesian Network Results]")
     for k, v in metrics.items():
         print(f"  {k}: {v:.4f}")
+
 
 if __name__ == "__main__":
     main()

@@ -1,13 +1,15 @@
 from __future__ import annotations
+
 import argparse
 import json
 from pathlib import Path
+
 import numpy as np
 
 from src.classpass.data import load_students, make_binary_target
-from src.classpass.preprocessing import preprocess_and_split
 from src.classpass.decision_tree import DecisionTreeClassifier
 from src.classpass.evaluation import compute_metrics, plot_confusion
+from src.classpass.preprocessing import preprocess_and_split
 
 
 def parse_depth_grid(s: str):

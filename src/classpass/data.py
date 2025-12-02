@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Tuple
 
 import pandas as pd
+
 
 # Load UCI data
 def load_students(path: str | Path) -> pd.DataFrame:
@@ -15,7 +15,8 @@ def load_students(path: str | Path) -> pd.DataFrame:
     df = pd.read_csv(path, sep=";")
 
     return df
-    
+
+
 # Map multiclass target to a binary target
 def make_binary_target(
     df: pd.DataFrame,

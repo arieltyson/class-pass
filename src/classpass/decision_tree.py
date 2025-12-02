@@ -1,7 +1,9 @@
 from __future__ import annotations
-import numpy as np
+
 from dataclasses import dataclass
-from typing import Optional, Dict, Any, Union
+from typing import Any
+
+import numpy as np
 
 
 # Impurity functions
@@ -14,22 +16,22 @@ def entropy(y: np.ndarray) -> float:
 def gini(y: np.ndarray) -> float:
     _, counts = np.unique(y, return_counts=True)
     p = counts / counts.sum()
-    return 1 - np.sum(p ** 2)
+    return 1 - np.sum(p**2)
 
 
 # Tree Node
 @dataclass
 class TreeNode:
-    feature_index: Optional[int] = None
-    threshold: Optional[float] = None
-    left: Optional["TreeNode"] = None
-    right: Optional["TreeNode"] = None
-    prediction: Optional[Any] = None  # leaf class
+    feature_index: int | None = None
+    threshold: float | None = None
+    left: TreeNode | None = None
+    right: TreeNode | None = None
+    prediction: Any | None = None  # leaf class
     depth: int = 0
+
 
 # simple decision tree classifier from scratch w/ entropy or gini split
 class DecisionTreeClassifier:
-
     def __init__(
         self,
         criterion: str = "entropy",
@@ -40,8 +42,8 @@ class DecisionTreeClassifier:
         self.criterion = criterion
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
-        self.root: Optional[TreeNode] = None
-        self.classes_: Optional[np.ndarray] = None
+        self.root: TreeNode | None = None
+        self.classes_: np.ndarray | None = None
 
     # Fitting
     def fit(self, X: np.ndarray, y: np.ndarray):
@@ -53,11 +55,7 @@ class DecisionTreeClassifier:
         node = TreeNode(depth=depth)
 
         # stopping conditions
-        if (
-            depth >= self.max_depth
-            or len(np.unique(y)) == 1
-            or len(y) < self.min_samples_split
-        ):
+        if depth >= self.max_depth or len(np.unique(y)) == 1 or len(y) < self.min_samples_split:
             node.prediction = self._majority_class(y)
             return node
 
@@ -77,7 +75,6 @@ class DecisionTreeClassifier:
         node.right = self._build_tree(X[right_idx], y[right_idx], depth + 1)
 
         return node
-
 
     # Utilities
     def _impurity(self, y: np.ndarray) -> float:
@@ -108,10 +105,7 @@ class DecisionTreeClassifier:
                 left_imp = self._impurity(y[left_idx])
                 right_imp = self._impurity(y[right_idx])
 
-                child_imp = (
-                    left_idx.mean() * left_imp
-                    + right_idx.mean() * right_imp
-                )
+                child_imp = left_idx.mean() * left_imp + right_idx.mean() * right_imp
 
                 gain = parent_imp - child_imp
                 if gain > best_gain:
@@ -144,7 +138,6 @@ class DecisionTreeClassifier:
             probs.append(vec)
 
         return np.array(probs)
-
 
     # Rule Extraction
     def extract_rules(self) -> list[str]:

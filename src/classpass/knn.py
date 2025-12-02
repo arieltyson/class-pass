@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal, Tuple
+from typing import Literal
 
 import numpy as np
 
-
 DistanceName = Literal["euclidean", "manhattan"]
+
 
 # compute pairwise distances between rows of X and Y
 def _pairwise_distance(X: np.ndarray, Y: np.ndarray, metric: DistanceName) -> np.ndarray:
@@ -26,13 +26,13 @@ def _pairwise_distance(X: np.ndarray, Y: np.ndarray, metric: DistanceName) -> np
 
 @dataclass
 class NeighborExplanation:
-    indices: np.ndarray       # shape (n_samples, k)
-    distances: np.ndarray     # shape (n_samples, k)
+    indices: np.ndarray  # shape (n_samples, k)
+    distances: np.ndarray  # shape (n_samples, k)
     neighbor_labels: np.ndarray  # shape (n_samples, k)
+
 
 # simple knn classifier from scratch (will be tested against sci kit later)
 class KNNClassifier:
-
     def __init__(self, k: int = 5, distance: DistanceName = "euclidean"):
         if k <= 0:
             raise ValueError("k must be positive")
@@ -43,7 +43,7 @@ class KNNClassifier:
         self._y_train: np.ndarray | None = None
         self.classes_: np.ndarray | None = None
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "KNNClassifier":
+    def fit(self, X: np.ndarray, y: np.ndarray) -> KNNClassifier:
         self._X_train = np.asarray(X, dtype=float)
         self._y_train = np.asarray(y)
         self.classes_ = np.unique(self._y_train)
@@ -54,7 +54,7 @@ class KNNClassifier:
             raise RuntimeError("KNNClassifier has not been fitted yet.")
 
     # return (distances, indices) of knns in the training set for each row in X
-    def _kneighbors(self, X: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def _kneighbors(self, X: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         self._check_is_fitted()
         X = np.asarray(X, dtype=float)
         dists = _pairwise_distance(X, self._X_train, metric=self.distance)

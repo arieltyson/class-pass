@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from typing import List
 
 import numpy as np
 
@@ -13,14 +12,12 @@ from src.classpass.knn import KNNClassifier
 from src.classpass.preprocessing import preprocess_and_split
 
 
-def parse_k_grid(k_arg: str) -> List[int]:
+def parse_k_grid(k_arg: str) -> list[int]:
     return [int(x) for x in k_arg.split(",") if x.strip()]
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description="Train baseline kNN for student risk prediction."
-    )
+def main():  # noqa: PLR0915
+    parser = argparse.ArgumentParser(description="Train baseline kNN for student risk prediction.")
     parser.add_argument("--data", type=str, required=True, help="Path to students.csv")
     parser.add_argument(
         "--target",

@@ -1,19 +1,19 @@
 from __future__ import annotations
 
-from typing import Dict, List, Sequence
+from collections.abc import Sequence
 
 import matplotlib.pyplot as plt
-import numpy as np
 from sklearn.metrics import (
+    ConfusionMatrixDisplay,
     accuracy_score,
     confusion_matrix,
-    ConfusionMatrixDisplay,
     f1_score,
 )
 
 # evaluate everything
 
-def compute_metrics(y_true, y_pred) -> Dict[str, float]:
+
+def compute_metrics(y_true, y_pred) -> dict[str, float]:
     return {
         "accuracy": float(accuracy_score(y_true, y_pred)),
         "f1_binary": float(f1_score(y_true, y_pred, average="binary", pos_label="At Risk")),
@@ -32,7 +32,7 @@ def plot_confusion(y_true, y_pred, labels: Sequence[str], outpath: str | None = 
     plt.close()
 
 
-def plot_f1_vs_k(ks: List[int], f1_scores: List[float], outpath: str | None = None):
+def plot_f1_vs_k(ks: list[int], f1_scores: list[float], outpath: str | None = None):
     plt.figure()
     plt.plot(ks, f1_scores, marker="o")
     plt.xlabel("k (number of neighbors)")

@@ -6,12 +6,14 @@ from src.classpass.knn import KNNClassifier
 
 def test_knn_basic_prediction():
     # simple linearly separable toy data
-    X = np.array([
-        [0, 0],
-        [1, 1],
-        [10, 10],
-        [11, 11],
-    ])
+    X = np.array(
+        [
+            [0, 0],
+            [1, 1],
+            [10, 10],
+            [11, 11],
+        ]
+    )
     y = np.array(["A", "A", "B", "B"])
 
     model = KNNClassifier(k=1, distance="euclidean")
@@ -24,12 +26,14 @@ def test_knn_basic_prediction():
 
 
 def test_knn_proba():
-    X = np.array([
-        [0, 0],
-        [1, 1],
-        [10, 10],
-        [11, 11],
-    ])
+    X = np.array(
+        [
+            [0, 0],
+            [1, 1],
+            [10, 10],
+            [11, 11],
+        ]
+    )
     y = np.array(["A", "A", "B", "B"])
 
     model = KNNClassifier(k=2)
@@ -69,4 +73,5 @@ def test_knn_matches_sklearn_small_case():
 
     # allow occasional mismatch due to floating precision or tie-breaking
     match_ratio = np.mean(p1 == p2)
-    assert match_ratio >= 0.6  # loose check
+    MIN_MATCH_RATIO = 0.6
+    assert match_ratio >= MIN_MATCH_RATIO  # loose check

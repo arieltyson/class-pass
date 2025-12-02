@@ -1,7 +1,11 @@
 from __future__ import annotations
+
+from dataclasses import dataclass
+
 import numpy as np
 import pandas as pd
-from dataclasses import dataclass
+
+PREDICTION_THRESHOLD = 0.5
 
 
 @dataclass
@@ -10,7 +14,6 @@ class CPT:
 
 
 class BayesianNetwork:
-
     def __init__(self, grade_thresh=10.0, engagement_thresh=3):
         self.grade_thresh = grade_thresh
         self.engagement_thresh = engagement_thresh
@@ -37,15 +40,9 @@ class BayesianNetwork:
         Y = (df[target_col] == "At Risk").astype(int)
 
         # Priors
-        self.low_grades_cpt = CPT({
-            (): LG.mean()
-        })
-        self.fin_risk_cpt = CPT({
-            (): FR.mean()
-        })
-        self.low_engage_cpt = CPT({
-            (): LE.mean()
-        })
+        self.low_grades_cpt = CPT({(): LG.mean()})
+        self.fin_risk_cpt = CPT({(): FR.mean()})
+        self.low_engage_cpt = CPT({(): LE.mean()})
 
         table = {}
         for lg in [0, 1]:
@@ -72,4 +69,4 @@ class BayesianNetwork:
 
     def predict(self, row: pd.Series):
         probs = self.predict_proba(row)
-        return "At Risk" if probs[1] > 0.5 else "Continue"
+        return "At Risk" if probs[1] > PREDICTION_THRESHOLD else "Continue"
