@@ -1,0 +1,28 @@
+{
+  "data_path": "/Users/arieltyson/Desktop/SFU/CMPT 310/Project/class-pass/data/raw/students.csv",
+  "target_col": "Target",
+  "binary": false,
+  "drop_cols": [],
+  "scaler": "standard",
+  "distance": "euclidean",
+  "k_values": [
+    3,
+    5,
+    7,
+    9,
+    11
+  ],
+  "best_k": 9,
+  "val_f1_per_k": [
+    0.6030987850696133,
+    0.6075087850891688,
+    0.6035488139942894,
+    0.6136133072004815,
+    0.6124093981048113
+  ],
+  "test_metrics": {
+    "accuracy": 0.6915254237288135,
+    "f1_macro": 0.5842885596406723,
+    "f1_binary": 0.5842885596406723
+  }
+}
