@@ -2,7 +2,7 @@
 
 **ClassPass** is a fully reproducible, interpretable machine learning and probabilistic AI system for early dropout risk detection in higher education programs.  
 
-It now implements the following AI paradigms:
+It implements the following AI paradigms:
 
 - **Custom k-Nearest Neighbours classifier**  
 - **Custom Decision Tree classifier**  
