@@ -3,13 +3,27 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
 
-from src.classpass.data import load_students, make_binary_target
-from src.classpass.evaluation import compute_metrics, plot_confusion, plot_f1_vs_k
-from src.classpass.knn import KNNClassifier
-from src.classpass.preprocessing import preprocess_and_split
+try:
+    from classpass.data import load_students, make_binary_target
+    from classpass.evaluation import compute_metrics, plot_confusion, plot_f1_vs_k
+    from classpass.knn import KNNClassifier
+    from classpass.preprocessing import preprocess_and_split
+except ModuleNotFoundError:
+    if TYPE_CHECKING:
+        raise
+    import sys
+
+    SRC_ROOT = Path(__file__).resolve().parents[1] / "src"
+    if str(SRC_ROOT) not in sys.path:
+        sys.path.insert(0, str(SRC_ROOT))
+    from classpass.data import load_students, make_binary_target
+    from classpass.evaluation import compute_metrics, plot_confusion, plot_f1_vs_k
+    from classpass.knn import KNNClassifier
+    from classpass.preprocessing import preprocess_and_split
 
 
 def parse_k_grid(k_arg: str) -> list[int]:
@@ -107,6 +121,7 @@ def main():  # noqa: PLR0915
     best_k = None
     best_f1 = -np.inf
     f1_per_k = []
+    f1_key = "f1_binary" if args.binary else "f1_macro"
 
     print("[Train] Tuning k on validation set...")
 
@@ -115,8 +130,8 @@ def main():  # noqa: PLR0915
         clf.fit(splits.X_train, splits.y_train)
         y_val_pred = clf.predict(splits.X_val)
 
-        metrics = compute_metrics(splits.y_val, y_val_pred)
-        f1 = metrics["f1_binary"]
+        metrics = compute_metrics(splits.y_val, y_val_pred, pos_label="At Risk")
+        f1 = metrics[f1_key]
         f1_per_k.append(f1)
 
         print(f"  k={k:2d} -> val F1(At Risk) = {f1:.4f}")
@@ -136,7 +151,7 @@ def main():  # noqa: PLR0915
     final_clf.fit(X_train_full, y_train_full)
 
     y_test_pred = final_clf.predict(splits.X_test)
-    test_metrics = compute_metrics(splits.y_test, y_test_pred)
+    test_metrics = compute_metrics(splits.y_test, y_test_pred, pos_label="At Risk")
 
     print("\n[Test metrics]")
     for name, value in test_metrics.items():
