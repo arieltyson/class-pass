@@ -2,22 +2,32 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
+from typing import TYPE_CHECKING
 
+import matplotlib.pyplot as plt
 import pandas as pd
 
-from src.classpass.data import load_students, make_binary_target
+try:
+    from classpass.data import load_students, make_binary_target
+except ModuleNotFoundError:
+    if TYPE_CHECKING:
+        raise
+    SRC_ROOT = Path(__file__).resolve().parents[1] / "src"
+    if str(SRC_ROOT) not in sys.path:
+        sys.path.insert(0, str(SRC_ROOT))
+    from classpass.data import load_students, make_binary_target
 
 
 def summarize(df: pd.DataFrame, target_col: str) -> dict:
+    """Compute basic EDA summaries for the dataset."""
     summary: dict = {}
-
     summary["n_rows"] = int(df.shape[0])
     summary["n_cols"] = int(df.shape[1])
 
     # missingness per column
-    missing = df.isna().mean().to_dict()
-    summary["missing_fraction"] = missing
+    summary["missing_fraction"] = df.isna().mean().to_dict()
 
     # target distribution
     value_counts = df[target_col].value_counts(normalize=False)
@@ -31,12 +41,32 @@ def summarize(df: pd.DataFrame, target_col: str) -> dict:
 
     # top categories for non-numeric
     cat_df = df.select_dtypes(exclude=["number"])
-    top_values = {}
-    for col in cat_df.columns:
-        top_values[col] = cat_df[col].value_counts().head(5).to_dict()
+    top_values = {col: cat_df[col].value_counts().head(5).to_dict() for col in cat_df.columns}
     summary["categorical_top_values"] = top_values
 
     return summary
+
+
+def ensure_dir(path: str | Path) -> Path:
+    directory = Path(path)
+    directory.mkdir(parents=True, exist_ok=True)
+    return directory
+
+
+def plot_target_distribution(df: pd.DataFrame, target_col: str, fig_path: Path) -> None:
+    """Plot a bar chart of target class counts and save it."""
+    counts = df[target_col].value_counts().sort_index()
+    fig, ax = plt.subplots(figsize=(5, 3.5))
+    ax.bar(counts.index, counts.values, color="#4C72B0")
+    ax.set_xlabel(target_col)
+    ax.set_ylabel("Count")
+    ax.set_title("Target Distribution")
+    for i, v in enumerate(counts.values):
+        ax.text(i, v, str(v), ha="center", va="bottom", fontsize=9)
+    fig.tight_layout()
+    fig_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(fig_path)
+    plt.close(fig)
 
 
 def main():
@@ -45,6 +75,12 @@ def main():
     parser.add_argument("--target", type=str, default="Target", help="Original target column")
     parser.add_argument("--binary", action="store_true", help="Add binary target column")
     parser.add_argument("--outdir", type=str, default="reports/eda", help="Output directory")
+    parser.add_argument(
+        "--figdir",
+        type=str,
+        default="reports/figures",
+        help="Directory to store generated plots.",
+    )
     args = parser.parse_args()
 
     df = load_students(args.data)
@@ -55,8 +91,8 @@ def main():
     else:
         target_col = args.target
 
-    outdir = Path(args.outdir)
-    outdir.mkdir(parents=True, exist_ok=True)
+    outdir = ensure_dir(args.outdir)
+    figdir = ensure_dir(args.figdir)
 
     summary = summarize(df, target_col=target_col)
 
@@ -69,7 +105,11 @@ def main():
     target_counts = pd.Series(summary["target_counts"], name="count")
     target_counts.to_csv(outdir / "target_counts.csv")
 
+    # save class distribution plot
+    plot_target_distribution(df, target_col, figdir / "target_distribution.png")
+
     print(f"[EDA] Wrote EDA summary to {json_path}")
+    print(f"[EDA] Saved target distribution plot to {figdir / 'target_distribution.png'}")
 
 
 if __name__ == "__main__":
